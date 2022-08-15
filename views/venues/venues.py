@@ -1,7 +1,7 @@
 from datetime import datetime
 from flask import render_template
 
-from models import Show, Venue
+from models import Show, Venue, db
 
 
 def venues():
@@ -10,7 +10,6 @@ def venues():
 
     venues = Venue.query.all()
     areas = []
-    now = datetime.utcnow()
 
     for venue in venues:
         area = {
@@ -27,7 +26,7 @@ def venues():
             area_venue = {
                 "id": venue.id,
                 "name": venue.name,
-                "num_upcoming_shows": Show.query.join(Venue).filter(Show.venue_id == venue.id).filter(Show.start_time > now).count()
+                "num_upcoming_shows": db.session.query(Show).join(Venue).filter(Show.venue_id == venue.id).filter(Show.start_time > datetime.now()).count()
             }
             area["venues"].append(area_venue)
 
@@ -35,8 +34,4 @@ def venues():
             continue
         else:
             areas.append(area)
-
-        print(Show.query.join(Venue).filter(
-            Show.venue_id == venue.id).filter(Show.start_time > now))
-
     return render_template('pages/venues.html', areas=areas)

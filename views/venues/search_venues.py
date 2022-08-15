@@ -1,6 +1,6 @@
 from datetime import datetime
 from flask import render_template, request
-from models import Show, Venue
+from models import Show, Venue, db
 
 
 def search_venues():
@@ -11,18 +11,16 @@ def search_venues():
     search_term = request.form.get('search_term', '')
     search = "%{}%".format(search_term)
     venues = Venue.query.filter(Venue.name.ilike(search)).all()
-    print(search, venues)
     response = {
-        "count": Venue.query.filter(Venue.name.like(search)).count(),
+        "count": Venue.query.filter(Venue.name.ilike(search)).count(),
         "data": []
     }
 
-    now = datetime.now()
     for venue in venues:
         chunk = {
             "id": venue.id,
             "name": venue.name,
-            "num_upcoming_shows": Show.query.join(Venue).filter(Show.venue_id == venue.id).filter(Show.start_time > now).count()
+            "num_upcoming_shows": db.session.query(Show).join(Venue).filter(Show.venue_id == venue.id).filter(Show.start_time > datetime.now()).count()
         }
         response["data"].append(chunk)
 

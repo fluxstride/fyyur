@@ -1,7 +1,7 @@
 from datetime import datetime
 from flask import render_template, request
 
-from models import Artist, Show
+from models import Artist, Show, db
 
 
 def search_artists():
@@ -15,13 +15,12 @@ def search_artists():
         "data": []
     }
 
-    now = datetime.utcnow()
     artists = Artist.query.filter(Artist.name.ilike(search)).all()
     for artist in artists:
         chunk = {
             "id": artist.id,
             "name": artist.name,
-            "num_upcoming_shows": Show.query.join(Artist).filter(Show.artist_id == artist.id).filter(Show.start_time > now).count(),
+            "num_upcoming_shows":  db.session.query(Show).join(Artist).filter(Show.artist_id == artist.id).filter(Show.start_time > datetime.now()).count(),
         }
         response["data"].append(chunk)
     return render_template('pages/search_artists.html', results=response, search_term=search_term)

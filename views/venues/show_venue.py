@@ -7,9 +7,8 @@ from models import Artist, Venue, Show, db
 def show_venue(venue_id):
     # shows the venue page with the given venue_id
     # TODO: replace with real venue data from the venues table, using venue_id
-    now = datetime.now()
 
-    venue = db.session.query(Venue).get(venue_id)
+    venue = Venue.query.get(venue_id)
     data = {
         "id": venue.id,
         "name": venue.name,
@@ -26,13 +25,13 @@ def show_venue(venue_id):
 
         "past_shows": [],
         "upcoming_shows": [],
-        "past_shows_count": Show.query.join(Venue).filter(Show.venue_id == venue_id).filter(Show.start_time < now).count(),
-        "upcoming_shows_count": Show.query.join(Venue).filter(Show.venue_id == venue_id).filter(Show.start_time > now).count(),
+        "past_shows_count": db.session.query(Show).join(Venue).filter(Show.venue_id == venue_id).filter(Show.start_time < datetime.now()).count(),
+        "upcoming_shows_count": db.session.query(Show).join(Venue).filter(Show.venue_id == venue_id).filter(Show.start_time > datetime.now()).count(),
     }
     upcoming_shows = db.session.query(Show).join(
-        Venue).filter(Show.venue_id == venue_id).filter(Show.start_time > now).all()
+        Venue).filter(Show.venue_id == venue_id).filter(Show.start_time > datetime.now()).all()
     past_shows = db.session.query(Show).join(
-        Venue).filter(Show.venue_id == venue_id).filter(Show.start_time < now).all()
+        Venue).filter(Show.venue_id == venue_id).filter(Show.start_time < datetime.now()).all()
 
     for upcoming_show in upcoming_shows:
         show = {
